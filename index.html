@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>艺术字体转换器</title>
+    <title>艺术字体转换器 — 拼图模式</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Dancing+Script&family=Pacifico&family=Great+Vibes&family=Shadows+Into+Light&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&family=ZCOOL+XiaoWei&display=swap');
         
@@ -15,171 +15,307 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             background-color: white;
-            padding: 30px;
+            padding: 24px;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-
-        .input-section {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .input-section label {
-            display: block;
-            margin-bottom: 10px;
-            font-size: 16px;
-            color: #333;
-        }
-
-        .input-section input {
-            width: 100px;
-            height: 40px;
-            font-size: 24px;
-            text-align: center;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            padding: 5px;
-            transition: border-color 0.3s;
-        }
-
-        .input-section input:focus {
-            outline: none;
-            border-color: #4ecdc4;
-        }
-
-        .font-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.08);
         }
 
         h1 {
             text-align: center;
             color: #333;
-            margin-bottom: 40px;
+            margin-bottom: 18px;
         }
 
-        .font-showcase {
-            margin-bottom: 30px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        .font-name {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 10px;
-        }
-
-        .font-example {
-            font-size: 36px;
-            line-height: 1.5;
-            margin: 0;
-        }
-
-        .ma-shan-zheng {
-            font-family: 'Ma Shan Zheng', cursive;
-        }
-
-        .zhi-mang-xing {
-            font-family: 'Zhi Mang Xing', cursive;
-        }
-
-        .zcool-kuaile {
-            font-family: 'ZCOOL KuaiLe', cursive;
-        }
-
-        .zcool-xiaowei {
-            font-family: 'ZCOOL XiaoWei', serif;
-        }
-
-        .artistic-1 {
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            -webkit-text-fill-color: transparent;
-            font-weight: bold;
-            font-size: 48px;
-        }
-
-        .artistic-2 {
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            color: #2c3e50;
-            font-size: 48px;
-        }
-
-        .font-example {
-            font-size: 48px;
-            line-height: 1.5;
-            margin: 0;
-            min-height: 72px;
+        .row {
             display: flex;
-            align-items: center;
-            justify-content: center;
+            gap: 20px;
+            align-items: flex-start;
         }
+
+        .left, .right {
+            background: #fff;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+
+        .left {
+            flex: 1 1 360px;
+        }
+
+        .right {
+            width: 520px;
+            text-align: center;
+        }
+
+        label { display:block; margin-bottom:6px; color:#444; }
+        input[type="text"], select, input[type="number"] {
+            width: 100%;
+            padding: 8px 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            margin-bottom: 12px;
+        }
+
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        .control-full { grid-column: 1 / -1; }
+
+        input[type="range"] { width: 100%; }
+
+        button {
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button.secondary {
+            background: #888;
+        }
+
+        canvas { background: #fff; border-radius:8px; max-width:100%; }
+
+        .note { font-size: 13px; color: #666; margin-top:8px; }
+
+        /* existing font showcase styles (kept) */
+        .font-grid { margin-top:18px; display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; }
+        .font-showcase { padding:12px; border:1px solid #eee; border-radius:6px; }
+        .font-name { font-size:12px; color:#666; margin-bottom:8px; }
+        .font-example { font-size:32px; text-align:center; min-height:48px; display:flex;align-items:center;justify-content:center; }
+
     </style>
-</head>
+    </head>
 <body>
     <div class="container">
-        <h1>艺术字体转换器</h1>
-        
-        <div class="input-section">
-            <label for="inputText">请输入一个汉字：</label>
-            <input type="text" id="inputText" maxlength="1" placeholder="输入汉字">
+        <h1>用小字拼出大字（拼图 / 马赛克）</h1>
+
+        <div class="row">
+            <div class="left">
+                <div class="controls">
+                    <div>
+                        <label for="smallChar">小字符（用于拼图）</label>
+                        <input id="smallChar" type="text" maxlength="1" value="王" placeholder="小字符">
+                    </div>
+
+                    <div>
+                        <label for="bigChar">大字符（目标形状）</label>
+                        <input id="bigChar" type="text" maxlength="1" value="王" placeholder="目标大字">
+                    </div>
+
+                    <div>
+                        <label for="gridSize">格子大小（字体大小） <span id="gridSizeVal">12</span>px</label>
+                        <input id="gridSize" type="range" min="6" max="48" value="12">
+                    </div>
+
+                    <div>
+                        <label for="threshold">密度阈值（像素阈值） <span id="thresholdVal">128</span></label>
+                        <input id="threshold" type="range" min="0" max="255" value="128">
+                    </div>
+
+                    <div>
+                        <label for="colorPicker">小字颜色</label>
+                        <input id="colorPicker" type="color" value="#222222">
+                    </div>
+
+                    <div>
+                        <label for="bgColor">背景颜色</label>
+                        <input id="bgColor" type="color" value="#ffffff">
+                    </div>
+
+                    <div class="control-full">
+                        <label for="fontSelect">小字字体（预览）</label>
+                        <select id="fontSelect">
+                            <option value="24px 'ZCOOL KuaiLe', sans-serif">ZCOOL KuaiLe</option>
+                            <option value="24px 'Ma Shan Zheng', cursive">Ma Shan Zheng</option>
+                            <option value="24px 'Zhi Mang Xing', cursive">Zhi Mang Xing</option>
+                            <option value="24px 'ZCOOL XiaoWei', serif">ZCOOL XiaoWei</option>
+                            <option value="24px Arial, sans-serif">系统 Arial</option>
+                        </select>
+                    </div>
+
+                    <div style="grid-column:1/3; display:flex; gap:8px; justify-content:flex-end;">
+                        <button id="generateBtn">生成拼图</button>
+                        <button id="downloadBtn" class="secondary">导出 PNG</button>
+                    </div>
+                </div>
+                <p class="note">说明：输入两个字符后点击“生成拼图”。可调节格子大小和密度以获得不同细节效果。</p>
+            </div>
+
+            <div class="right">
+                <canvas id="mosaicCanvas" width="500" height="500" aria-label="拼图预览"></canvas>
+                <div style="margin-top:8px; display:flex; gap:8px; justify-content:center;">
+                    <button id="fitBtn" class="secondary">适应宽度</button>
+                    <button id="clearBtn" class="secondary">清除</button>
+                </div>
+            </div>
         </div>
 
-        <div class="font-grid">
+        <div class="font-grid" style="margin-top:18px;">
             <div class="font-showcase">
                 <div class="font-name">马善钟楷书体</div>
-                <p class="font-example ma-shan-zheng"></p>
+                <div class="font-example ma-shan-zheng" id="ex1"></div>
             </div>
-
             <div class="font-showcase">
                 <div class="font-name">智孟行书体</div>
-                <p class="font-example zhi-mang-xing"></p>
+                <div class="font-example zhi-mang-xing" id="ex2"></div>
             </div>
-
             <div class="font-showcase">
                 <div class="font-name">快乐体</div>
-                <p class="font-example zcool-kuaile"></p>
+                <div class="font-example zcool-kuaile" id="ex3"></div>
             </div>
-
             <div class="font-showcase">
                 <div class="font-name">小魏体</div>
-                <p class="font-example zcool-xiaowei"></p>
-            </div>
-
-            <div class="font-showcase">
-                <div class="font-name">渐变艺术效果</div>
-                <p class="font-example artistic-1"></p>
-            </div>
-
-            <div class="font-showcase">
-                <div class="font-name">阴影艺术效果</div>
-                <p class="font-example artistic-2"></p>
+                <div class="font-example zcool-xiaowei" id="ex4"></div>
             </div>
         </div>
     </div>
 
     <script>
-        document.getElementById('inputText').addEventListener('input', function(e) {
-            const text = e.target.value;
-            // 限制只能输入一个汉字
-            if (text.length > 1) {
-                e.target.value = text.charAt(0);
-            }
-            
-            // 更新所有字体示例
-            document.querySelectorAll('.font-example').forEach(element => {
-                element.textContent = e.target.value;
-            });
+        // 简单输入限制与示例更新
+        const inputSmall = document.getElementById('smallChar');
+        const inputBig = document.getElementById('bigChar');
+        const examples = [document.getElementById('ex1'), document.getElementById('ex2'), document.getElementById('ex3'), document.getElementById('ex4')];
+
+        function updateExamples() {
+            const v = inputSmall.value || '';
+            examples.forEach(el => el.textContent = v);
+        }
+
+        inputSmall.addEventListener('input', (e)=>{
+            if (e.target.value.length>1) e.target.value = e.target.value.charAt(0);
+            updateExamples();
         });
+
+        inputBig.addEventListener('input', (e)=>{ if (e.target.value.length>1) e.target.value = e.target.value.charAt(0); });
+
+        updateExamples();
+
+        // 马赛克生成逻辑
+        const canvas = document.getElementById('mosaicCanvas');
+        const ctx = canvas.getContext('2d');
+        const generateBtn = document.getElementById('generateBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const fitBtn = document.getElementById('fitBtn');
+
+        const gridSizeInput = document.getElementById('gridSize');
+        const gridSizeVal = document.getElementById('gridSizeVal');
+        const thresholdInput = document.getElementById('threshold');
+        const thresholdVal = document.getElementById('thresholdVal');
+        const colorPicker = document.getElementById('colorPicker');
+        const bgColor = document.getElementById('bgColor');
+        const fontSelect = document.getElementById('fontSelect');
+
+        gridSizeInput.addEventListener('input', ()=>{ gridSizeVal.textContent = gridSizeInput.value; });
+        thresholdInput.addEventListener('input', ()=>{ thresholdVal.textContent = thresholdInput.value; });
+
+        function generateMosaic() {
+            const small = inputSmall.value || '王';
+            const big = inputBig.value || '王';
+            const grid = parseInt(gridSizeInput.value, 10) || 12;
+            const threshold = parseInt(thresholdInput.value, 10) || 128;
+            const color = colorPicker.value || '#222';
+            const background = bgColor.value || '#fff';
+
+            // 清除并填充背景
+            ctx.fillStyle = background;
+            ctx.fillRect(0,0,canvas.width,canvas.height);
+
+            // 先在离屏 canvas 上绘制大字符
+            const off = document.createElement('canvas');
+            off.width = canvas.width;
+            off.height = canvas.height;
+            const octx = off.getContext('2d');
+            octx.clearRect(0,0,off.width,off.height);
+
+            // 选择合适的字体大小，使大字占满画布
+            const fontSize = Math.floor(off.height * 0.9);
+            octx.fillStyle = '#000';
+            octx.textAlign = 'center';
+            octx.textBaseline = 'middle';
+            octx.font = `${fontSize}px serif`;
+            octx.fillText(big, off.width/2, off.height/2);
+
+            // 读取像素数据
+            const img = octx.getImageData(0,0,off.width,off.height);
+            const data = img.data;
+
+            // 小字绘制样式
+            ctx.fillStyle = color;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // 设置小字字体（fontSelect 中保存了 font declaration 的前缀大小，我们需要覆盖大小）
+            function getSmallFont(size) {
+                // fontSelect.value 形如 "24px 'ZCOOL KuaiLe', sans-serif"
+                const base = fontSelect.value;
+                // 把前面的数字替换为 size
+                return base.replace(/^[0-9]+px/, size + 'px');
+            }
+
+            // 遍历网格，依据像素亮度决定是否绘制小字
+            for (let y = 0; y < off.height; y += grid) {
+                for (let x = 0; x < off.width; x += grid) {
+                    const idx = (y * off.width + x) * 4;
+                    const r = data[idx], g = data[idx+1], b = data[idx+2], a = data[idx+3];
+                    // 使用亮度或 alpha 判断：这里用平均亮度
+                    const lum = (r + g + b) / 3;
+                    if (a > 128 && lum < (255 - threshold)) {
+                        // draw small char at (x,y)
+                        ctx.font = getSmallFont(Math.floor(grid * 0.9));
+                        ctx.fillText(small, x + grid/2, y + grid/2 + 1); // +1 调整视觉中心
+                    }
+                }
+            }
+        }
+
+        generateBtn.addEventListener('click', () => {
+            generateMosaic();
+        });
+
+        clearBtn.addEventListener('click', ()=>{
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+        });
+
+        fitBtn.addEventListener('click', ()=>{
+            // 将 canvas 宽度设置为容器宽度的最大值（保留方形）
+            const right = document.querySelector('.right');
+            const style = getComputedStyle(right);
+            const w = Math.min(600, right.clientWidth - parseFloat(style.paddingLeft || 0) );
+            canvas.width = w;
+            canvas.height = w;
+            generateMosaic();
+        });
+
+        downloadBtn.addEventListener('click', ()=>{
+            const link = document.createElement('a');
+            link.download = `mosaic_${(inputBig.value||'big')}_${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+
+        // 初始绘制
+        window.addEventListener('load', ()=>{
+            // ensure canvas square and scale for devicePixelRatio
+            const dpr = window.devicePixelRatio || 1;
+            const size = 500;
+            canvas.width = size * dpr;
+            canvas.height = size * dpr;
+            canvas.style.width = size + 'px';
+            canvas.style.height = size + 'px';
+            ctx.setTransform(dpr,0,0,dpr,0,0);
+            generateMosaic();
+        });
+
     </script>
 </body>
 </html>
