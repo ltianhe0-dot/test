@@ -103,7 +103,7 @@
                 <div class="controls">
                     <div>
                         <label for="smallChar">小字符（用于拼图）</label>
-                        <input id="smallChar" type="text" maxlength="1" value="王" placeholder="小字符">
+                        <input id="smallChar" type="text" maxlength="1" value="振" placeholder="小字符">
                     </div>
 
                     <div>
@@ -117,7 +117,7 @@
 
                     <div>
                         <label for="bigChar">大字符（目标形状）</label>
-                        <input id="bigChar" type="text" maxlength="1" value="王" placeholder="目标大字">
+                        <input id="bigChar" type="text" maxlength="1" value="振" placeholder="目标大字">
                     </div>
 
                     <div>
@@ -300,8 +300,8 @@
         });
 
         function generateMosaic() {
-            const small = inputSmall.value || '王';
-            const big = inputBig.value || '王';
+            const small = inputSmall.value || '';
+            const big = inputBig.value || '';
             const grid = parseInt(gridSizeInput.value, 10) || 12;
             const threshold = parseInt(thresholdInput.value, 10) || 128;
             const color = colorPicker.value || '#222';
