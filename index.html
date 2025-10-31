@@ -107,6 +107,15 @@
                     </div>
 
                     <div>
+                        <label for="tileMode">小字类型</label>
+                        <select id="tileMode">
+                            <option value="char">字符</option>
+                            <option value="emoji">表情</option>
+                            <option value="image">图片（上传）</option>
+                        </select>
+                    </div>
+
+                    <div>
                         <label for="bigChar">大字符（目标形状）</label>
                         <input id="bigChar" type="text" maxlength="1" value="王" placeholder="目标大字">
                     </div>
@@ -139,6 +148,41 @@
                             <option value="24px 'Zhi Mang Xing', cursive">Zhi Mang Xing</option>
                             <option value="24px 'ZCOOL XiaoWei', serif">ZCOOL XiaoWei</option>
                             <option value="24px Arial, sans-serif">系统 Arial</option>
+                        </select>
+                    </div>
+
+                    <div class="control-full" id="emojiBlock" style="display:none;">
+                        <label>表情包库（点击选择）</label>
+                        <div id="emojiGallery" style="display:flex;flex-wrap:wrap;gap:6px;">
+                            <!-- 常用表情（Unicode） -->
+                            <button class="emoji-item" type="button">😀</button>
+                            <button class="emoji-item" type="button">😍</button>
+                            <button class="emoji-item" type="button">😂</button>
+                            <button class="emoji-item" type="button">😎</button>
+                            <button class="emoji-item" type="button">🤖</button>
+                            <button class="emoji-item" type="button">🐶</button>
+                            <button class="emoji-item" type="button">🐱</button>
+                            <button class="emoji-item" type="button">❤️</button>
+                            <button class="emoji-item" type="button">🌟</button>
+                            <button class="emoji-item" type="button">🍉</button>
+                            <button class="emoji-item" type="button">🔥</button>
+                            <button class="emoji-item" type="button">🎵</button>
+                        </div>
+                        <div style="margin-top:8px;">
+                            <label for="uploadImg">上传图片（可选）</label>
+                            <input id="uploadImg" type="file" accept="image/*">
+                        </div>
+                    </div>
+
+                    <div class="control-full">
+                        <label for="bigFontSelect">大字字体（用于画形状）</label>
+                        <select id="bigFontSelect">
+                            <option value="serif">系统 Serif</option>
+                            <option value="'Ma Shan Zheng', cursive">Ma Shan Zheng</option>
+                            <option value="'Zhi Mang Xing', cursive">Zhi Mang Xing</option>
+                            <option value="'ZCOOL XiaoWei', serif">ZCOOL XiaoWei</option>
+                            <option value="'ZCOOL KuaiLe', sans-serif">ZCOOL KuaiLe</option>
+                            <option value="Arial, sans-serif">系统 Arial</option>
                         </select>
                     </div>
 
@@ -207,16 +251,53 @@
         const clearBtn = document.getElementById('clearBtn');
         const fitBtn = document.getElementById('fitBtn');
 
-        const gridSizeInput = document.getElementById('gridSize');
+    const gridSizeInput = document.getElementById('gridSize');
         const gridSizeVal = document.getElementById('gridSizeVal');
         const thresholdInput = document.getElementById('threshold');
         const thresholdVal = document.getElementById('thresholdVal');
         const colorPicker = document.getElementById('colorPicker');
         const bgColor = document.getElementById('bgColor');
         const fontSelect = document.getElementById('fontSelect');
+    const bigFontSelect = document.getElementById('bigFontSelect');
+        const tileMode = document.getElementById('tileMode');
+        const emojiBlock = document.getElementById('emojiBlock');
+        const emojiGallery = document.getElementById('emojiGallery');
+        const uploadImg = document.getElementById('uploadImg');
+
+        let uploadedImage = null; // Image object
+        let selectedEmoji = '';
 
         gridSizeInput.addEventListener('input', ()=>{ gridSizeVal.textContent = gridSizeInput.value; });
         thresholdInput.addEventListener('input', ()=>{ thresholdVal.textContent = thresholdInput.value; });
+
+        tileMode.addEventListener('change', ()=>{
+            const mode = tileMode.value;
+            if (mode === 'emoji' || mode === 'image') {
+                emojiBlock.style.display = 'block';
+            } else {
+                emojiBlock.style.display = 'none';
+            }
+        });
+
+        // emoji gallery click
+        emojiGallery.addEventListener('click', (e)=>{
+            const btn = e.target.closest('.emoji-item');
+            if (!btn) return;
+            selectedEmoji = btn.textContent.trim();
+            // reflect in smallChar input for preview
+            inputSmall.value = selectedEmoji;
+            updateExamples();
+        });
+
+        // file upload
+        uploadImg.addEventListener('change', (e)=>{
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = ()=>{ uploadedImage = img; URL.revokeObjectURL(url); };
+            img.src = url;
+        });
 
         function generateMosaic() {
             const small = inputSmall.value || '王';
@@ -242,7 +323,9 @@
             octx.fillStyle = '#000';
             octx.textAlign = 'center';
             octx.textBaseline = 'middle';
-            octx.font = `${fontSize}px serif`;
+            // 使用用户选择的大字字体（仅替换字体族部分）
+            const bigFontFamily = bigFontSelect.value || 'serif';
+            octx.font = `${fontSize}px ${bigFontFamily}`;
             octx.fillText(big, off.width/2, off.height/2);
 
             // 读取像素数据
@@ -270,9 +353,32 @@
                     // 使用亮度或 alpha 判断：这里用平均亮度
                     const lum = (r + g + b) / 3;
                     if (a > 128 && lum < (255 - threshold)) {
-                        // draw small char at (x,y)
-                        ctx.font = getSmallFont(Math.floor(grid * 0.9));
-                        ctx.fillText(small, x + grid/2, y + grid/2 + 1); // +1 调整视觉中心
+                        // draw tile at (x,y) based on mode
+                        const mode = tileMode.value;
+                        const cx = x + grid/2;
+                        const cy = y + grid/2 + 1;
+                        if (mode === 'char') {
+                            ctx.font = getSmallFont(Math.floor(grid * 0.9));
+                            ctx.fillText(small, cx, cy);
+                        } else if (mode === 'emoji') {
+                            // emoji as text
+                            ctx.font = `${Math.floor(grid * 0.95)}px serif`;
+                            const em = selectedEmoji || small;
+                            ctx.fillText(em, cx, cy + Math.floor(grid*0.05));
+                        } else if (mode === 'image' && uploadedImage) {
+                            // draw uploaded image scaled to grid
+                            try {
+                                ctx.drawImage(uploadedImage, x, y, grid, grid);
+                            } catch (err) {
+                                // fallback to small char
+                                ctx.font = getSmallFont(Math.floor(grid * 0.9));
+                                ctx.fillText(small, cx, cy);
+                            }
+                        } else {
+                            // fallback
+                            ctx.font = getSmallFont(Math.floor(grid * 0.9));
+                            ctx.fillText(small, cx, cy);
+                        }
                     }
                 }
             }
